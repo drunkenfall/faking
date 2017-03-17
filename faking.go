@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,23 +14,8 @@ import (
 // Cracklib is a random-pop interface to the cracklib wordlist
 type Cracklib []string
 
-var words Cracklib
-
 func init() {
-	cracklibLocation := os.Getenv("DF_CRACKLIB_LOCATION")
-	defaultCracklibLocation := "/usr/share/cracklib/cracklib-small"
-	if cracklibLocation == "" {
-		log.Print("Cracklib location set to default: " + defaultCracklibLocation)
-
-		cracklibLocation = defaultCracklibLocation
-	}
-	out, err := ioutil.ReadFile(cracklibLocation)
-	if err != nil {
-		log.Print("Cracklib failed to load. Set location by env variable DF_CRACKLIB_LOCATION")
-		return
-	}
-	words = removeApostrophes(strings.Split(string(out), "\n"))
-	log.Printf("Loaded %d cracklib strings", len(words))
+	log.Printf("faking: Loaded %d cracklib strings", len(words))
 
 	// Also reset the random...
 	rand.Seed(time.Now().UnixNano())
@@ -167,14 +151,4 @@ func FakeAvatar() string {
 
 func percentTrue(n int) bool {
 	return rand.Intn(100) <= n
-}
-
-func removeApostrophes(c Cracklib) Cracklib {
-	var vsf Cracklib
-	for _, v := range c {
-		if !strings.Contains(v, "'") {
-			vsf = append(vsf, v)
-		}
-	}
-	return vsf
 }
