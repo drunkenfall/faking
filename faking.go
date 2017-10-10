@@ -2,20 +2,40 @@ package faking
 
 import (
 	"fmt"
-	roman "github.com/StefanSchroeder/Golang-Roman"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	roman "github.com/StefanSchroeder/Golang-Roman"
 )
 
 // Cracklib is a random-pop interface to the cracklib wordlist
 type Cracklib []string
 
+var avatardir = "static/avatars/fake/"
+var avatars []os.FileInfo
+
+// ai is the avatar index of the current avatar
+var ai int
+
 func init() {
+	var err error
 	log.Printf("faking: Loaded %d cracklib strings", len(words))
+
+	avatars, err = ioutil.ReadDir(avatardir)
+	if err != nil {
+		log.Fatal("No fake avatars available")
+	}
+
+	// Shuffle the avatars so that they are not repeated
+	for i := range avatars {
+		j := rand.Intn(i + 1)
+		avatars[i], avatars[j] = avatars[j], avatars[i]
+	}
 
 	// Also reset the random...
 	rand.Seed(time.Now().UnixNano())
@@ -110,15 +130,15 @@ func FakeNick() string {
 
 // FakeTournamentTitle returns a fake tournament title and a numeral
 func FakeTournamentTitle() (string, string) {
-	f := []string{"Faking", "Testing", "Durnkern", "Meta", "Jalo", "Poser"}
+	f := []string{"Faking", "Testing", "Durnkern", "Meta", "Jalo", "Poser", "Digging"}
 	prefix := f[rand.Intn(len(f))]
 
-	// Add a roman numeral between 20 and 400
-	x := roman.Roman(rand.Intn(380) + 20)
+	// Add a roman numeral between 20 and 50
+	x := roman.Roman(rand.Intn(30) + 20)
 
 	// Fake a subtitle
 	var subtitle string
-	switch rand.Intn(5) {
+	switch rand.Intn(7) {
 	case 0:
 		subtitle = fmt.Sprintf("The %s of %s", words.Title(), words.Title())
 	case 1:
@@ -126,9 +146,13 @@ func FakeTournamentTitle() (string, string) {
 	case 2:
 		subtitle = fmt.Sprintf("%s and %s for %s", words.Title(), words.Title(), words.Title())
 	case 3:
-		subtitle = fmt.Sprintf("Barry Trotter and the %s of %s", words.Title(), words.Title())
+		subtitle = fmt.Sprintf("A Song of %s and %s", words.Title(), words.Title())
 	case 4:
+		subtitle = fmt.Sprintf("To The %s", words.Title())
+	case 5:
 		subtitle = words.Title()
+	case 6:
+		subtitle = fmt.Sprintf("%s %s", words.Title(), words.Title())
 	}
 
 	title := fmt.Sprintf("%sFall %s: %s", prefix, x, subtitle)
@@ -137,16 +161,11 @@ func FakeTournamentTitle() (string, string) {
 
 // FakeAvatar returns a fake avatar URL
 func FakeAvatar() string {
-	dir := "static/avatars/fake/"
-	avatars, err := ioutil.ReadDir(dir)
-	if err != nil {
-		log.Fatal("No fake avatars available")
-	}
-
-	avatar := avatars[rand.Intn(len(avatars))]
+	avatar := avatars[ai%len(avatars)]
+	ai++
 
 	// Add a slash so that it makes sense as a URL
-	return "/" + dir + avatar.Name()
+	return "/" + avatardir + avatar.Name()
 }
 
 func percentTrue(n int) bool {
